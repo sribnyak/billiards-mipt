@@ -13,6 +13,10 @@ bool processCollision(Ball& ball, const HorizontalBorder& border);
 
 void processCollisions();
 
+real timeUntilCollision(const Ball&, const Ball&, real maxTime);
+real timeUntilCollision(const Ball&, const VerticalBorder&, real maxTime);
+real timeUntilCollision(const Ball&, const HorizontalBorder&, real maxTime);
+
 real timeWithoutCollisions(real maxTime);
 
 void simulate(real time);
