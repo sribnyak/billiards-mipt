@@ -1,0 +1,9 @@
+#include "maths.h"
+
+float dotProduct(const Vec2r& v, const Vec2r& u) {
+    return v.x * u.x + v.y * u.y;
+}
+
+float dotSquare(const Vec2r& v) { return dotProduct(v, v); }
+
+float length(const Vec2r& v) { return std::sqrt(dotSquare(v)); }

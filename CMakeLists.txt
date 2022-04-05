@@ -13,7 +13,7 @@ find_package(SFML 2 COMPONENTS graphics window system REQUIRED)
 set(SOURCES
     # Billiards/main.cpp
     Billiards/main_graphic.cpp
-    Billiards/globals.cpp Billiards/objects.cpp Billiards/physics.cpp
+    Billiards/objects.cpp Billiards/physics.cpp Billiards/maths.cpp
 )
 
 add_executable(Billiards ${SOURCES})

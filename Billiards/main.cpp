@@ -22,7 +22,7 @@ int main() {
     while (true) {
         if (state == GameState::simulation) {
             time = clock.getElapsedTime().asSeconds();
-            sleep(std::max(int(1 / fps - time), 0));
+//            sleep(std::max(int(1 / fps - time), 0));
             time = 1 / fps;
             clock.restart();
 

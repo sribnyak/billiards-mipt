@@ -3,6 +3,7 @@
 
 #include "globals.h"
 #include "objects.h"
+#include "maths.h"
 
 real minQuadraticSolution(real a, real b, real c, real inf);
 
