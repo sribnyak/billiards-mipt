@@ -1,0 +1,124 @@
+@startuml classes
+
+class Physics {
+    + bool processCollision(Ball&, Ball&)
+    + bool processCollision(Ball&, const Vector2&)
+    + bool processCollision(Ball&, const VerticalBorder&)
+    + bool processCollision(Ball&, const HorizontalBorder&)
+    + void processCollisions(Table&)
+    + real timeUntilCollision(const Ball&, const Ball&, real)
+    + real timeUntilCollision(const Ball&, const VerticalBorder&, real)
+    + real timeUntilCollision(const Ball&, const HorizontalBorder&, real)
+    + real timeWithoutCollisions(const Table&, real)
+    + void simulate(Table&, real)
+}
+
+class Maths {
+    + real length(const Vector2&)
+    + real minQuadraticSolution(real, real, real, real)
+}
+
+class Vector2 {
+    + Vector2(const sf::Vector2<real>&)
+    + real dot(const Vector2&)
+    + real squared()
+    + real length()
+}
+
+class Ball {
+    + real radius
+    + Vector2 position
+    + Vector2 velocity
+    + bool pocketed
+    + sf::CircleShape image
+
+    + Ball(const Vector2&, const Vector2&)
+    + void move(real)
+}
+
+abstract Border {
+    + Vector2 topLeft
+    + Vector2 bottomRight
+    + sf::RectangleShape image
+
+    + Border(const Vector2&, const Vector2&)
+    + real left()
+    + real right()
+    + real top()
+    + real bottom()
+}
+
+class VerticalBorder {
+    + VerticalBorder(const Vector2&, const Vector2&)
+    + real face
+}
+
+class HorizontalBorder {
+    + HorizontalBorder(const Vector2&, const Vector2&)
+    + real face
+}
+
+class Graphics {
+    + sf::RenderWindow window
+    + Graphics()
+    + void drawObject<typename T>(T&)
+    + void drawScene(const Table&)
+}
+
+class Table {
+    + real borderWidth
+    + real h
+    + real w
+    + real frictionAcceleration
+    + std::vector<Ball> balls
+    + std::vector<VerticalBorder> verticalBorders
+    + std::vector<HorizontalBorder> horizontalBorders
+
+    + Table();
+    + void createBalls()
+    + void createBorders()
+    + bool ballsStopped()
+    + void drawScene()
+}
+
+class Settings {
+    + real scale
+    + real fps
+
+    + Settings()
+    + void change()
+}
+
+enum GameState {
+    + strike
+    + simulation
+    + end
+}
+
+class Game {
+    Table table
+    Settings settings
+    GameState state
+    Graphics graphics
+
+    Game()
+    void mainLoop()
+}
+
+Game --o Table
+Game --o Settings
+Game --o GameState
+Game --o Graphics
+Game --o Maths
+Game --o Physics
+
+Table --o Ball
+Table --o VerticalBorder
+Table --o HorizontalBorder
+
+Maths --o Vector2
+
+class VerticalBorder implements Border
+class HorizontalBorder implements Border
+
+@enduml

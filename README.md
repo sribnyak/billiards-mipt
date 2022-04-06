@@ -44,4 +44,6 @@ $ ./Billiards
 
 ## Архитектура проекта
 
-Оформлена UML-диаграммой под названием `UML Architecture.png`
+Оформлена UML-диаграммой под названием `Architecture.png`, её описание лежит в `Architecture.puml`
+
+![Architecture](./Architecture.png)
