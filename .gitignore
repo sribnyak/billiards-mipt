@@ -1,7 +1,4 @@
-/build/
-/build-debug/
-/build-release/
-/cmake-build/
-/cmake-build-debug/
-/cmake-build-release/
+build*/
+cmake-build*/
 .idea/
+.vscode/

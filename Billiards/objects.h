@@ -1,33 +1,31 @@
-#ifndef BILLIARDS_OBJECTS_H
-#define BILLIARDS_OBJECTS_H
+#ifndef BILLIARDS_OBJECTS_H_
+#define BILLIARDS_OBJECTS_H_
 
 #include "globals.h"
+#include "maths.h"
 
-namespace table {
-    extern real h;
-    extern real w;
-    extern real frictionAcceleration;
-}
+extern int aliveBalls;
+extern int pocketedBalls;
 
 class Ball{
 public:
     static constexpr real radius = 0.05715;
-    Vec2r position;
-    Vec2r velocity;
+    Vector2 position;
+    Vector2 velocity;
     bool pocketed;
     sf::CircleShape image;
 
-    Ball(const Vec2r& position, const Vec2r& velocity = Vec2r());
+    Ball(const Vector2& position, const Vector2& velocity = Vector2());
     void move(real t);
 };
 
 class Border{
 public:
-    Vec2r topLeft;
-    Vec2r bottomRight;
+    Vector2 topLeft;
+    Vector2 bottomRight;
     sf::RectangleShape image;
 
-    Border(const Vec2r& topLeft, const Vec2r& bottomRight);
+    Border(const Vector2& topLeft, const Vector2& bottomRight);
     real left() const { return topLeft.x; }
     real right() const { return bottomRight.x; }
     real top() const { return topLeft.y; }
@@ -36,14 +34,32 @@ public:
 
 class VerticalBorder : public Border {
 public:
-    VerticalBorder(const Vec2r& topLeft, const Vec2r& bottomRight);
+    VerticalBorder(const Vector2& topLeft, const Vector2& bottomRight);
     real face;
 };
 
 class HorizontalBorder : public Border {
 public:
-    HorizontalBorder(const Vec2r& topLeft, const Vec2r& bottomRight);
+    HorizontalBorder(const Vector2& topLeft, const Vector2& bottomRight);
     real face;
+};
+
+class Table {
+public:
+    static constexpr real borderWidth = 0.05;
+    static constexpr real h = 1.27 + 2 * borderWidth;
+    static constexpr real w = 2.54 + 2 * borderWidth;
+    static constexpr real frictionAcceleration = 0.07;
+
+    std::vector<Ball> balls;
+    std::vector<VerticalBorder> verticalBorders;
+    std::vector<HorizontalBorder> horizontalBorders;
+
+    Table();
+    void createBalls();
+    void createBorders();
+    bool ballsStopped();
+    void drawScene();
 };
 
 class Graphics {
@@ -53,36 +69,18 @@ public:
     Graphics();
 
     template<typename T>
-    void drawObject(T &obj);
+    void drawObject(T& obj);
 
-    template<typename T>
-    void drawObjects(vector<T> &objs);
+    void drawScene(const Table& table);
 };
 
 class Settings {
 public:
-    real scale;
+    static constexpr real scale = 300;;
     real fps;
 
     Settings();
     void change();
-};
-
-class Table {
-public:
-    std::vector<Ball> balls;
-    std::vector<VerticalBorder> verticalBorders;
-    std::vector<HorizontalBorder> horizontalBorders;
-    int aliveBalls;
-    int pocketedBalls;
-    real borderWidth;
-    Graphics graphics;
-
-    Table();
-    void createBalls();
-    void createBorders();
-    bool ballsStopped();
-    void drawScene();
 };
 
 class Game {
@@ -92,9 +90,10 @@ public:
     Table table;
     Settings settings;
     GameState state;
+    Graphics graphics;
 
     Game();
     void mainLoop();
 };
 
-#endif // BILLIARDS_OBJECTS_H
+#endif // BILLIARDS_OBJECTS_H_

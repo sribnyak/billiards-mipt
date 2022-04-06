@@ -1,10 +1,20 @@
-#ifndef BILLIARDS_GLOBALS_H
-#define BILLIARDS_GLOBALS_H
+#ifndef BILLIARDS_MATHS_H_
+#define BILLIARDS_MATHS_H_
 
 #include "globals.h"
+#include <SFML/Graphics.hpp>
 
-float dotProduct(const Vec2r& v, const Vec2r& u);
-float dotSquare(const Vec2r& v);
-float length(const Vec2r& v);
+class Vector2 : public sf::Vector2<real> {
+public:
+    using sf::Vector2<real>::Vector2;
+    Vector2(const sf::Vector2<real>&);
+    real dot(const Vector2& other) const;
+    real squared() const;
+    real length() const;
+};
 
-#endif // BILLIARDS_GLOBALS_H
+real length(const Vector2& vector);
+
+real minQuadraticSolution(real a, real b, real c, real inf);
+
+#endif // BILLIARDS_MATHS_H_

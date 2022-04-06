@@ -1,79 +1,72 @@
 #include "objects.h"
 #include "physics.h"
+#include <iostream>
 
-namespace tableSettings {
-    real h = 1.27 + 2 * borderWidth;
-    real w = 2.54 + 2 * borderWidth;
-    real frictionAcceleration = 0.07;
-}
+int aliveBalls = 0;
+int pocketedBalls = 0;
 
-Ball::Ball(const Vec2r& position, const Vec2r& velocity) // default velocity 0
+Ball::Ball(const Vector2& position, const Vector2& velocity) // default velocity 0
     : position(position), velocity(velocity),
-      pocketed(false), image(radius * scale) {
-    image.setOrigin(Vec2r(radius * scale, radius * scale));
-    image.setPosition(position * scale);
+      pocketed(false), image(radius * Settings::Settings::scale) {
+    image.setOrigin(Vector2(radius * Settings::Settings::scale, radius * Settings::scale));
+    image.setPosition(position * Settings::scale);
 }
 
 void Ball::move(real t) {
     position += t * velocity;
-    image.setPosition(position * scale);
-    if (position.x < -radius || position.x > tableSettings::w + radius ||
-            position.y < -radius || position.y > tableSettings::h + radius) {
+    image.setPosition(position * Settings::scale);
+    if (position.x < -radius || position.x > Table::w + radius ||
+            position.y < -radius || position.y > Table::h + radius) {
         pocketed = true;
         ++pocketedBalls;
         --aliveBalls;
-        velocity = Vec2r(0, 0);
+        velocity = Vector2(0, 0);
     }
 }
 
-Border::Border(const Vec2r& topLeft, const Vec2r& bottomRight)
+Border::Border(const Vector2& topLeft, const Vector2& bottomRight)
     : topLeft(topLeft), bottomRight(bottomRight) {
-    Vec2r diag = bottomRight - topLeft;
-    image.setSize(diag * scale);
-    image.setPosition(topLeft * scale);
+    Vector2 diag = bottomRight - topLeft;
+    image.setSize(diag * Settings::scale);
+    image.setPosition(topLeft * Settings::scale);
 }
 
-VerticalBorder::VerticalBorder(const Vec2r& topLeft, const Vec2r& bottomRight)
+VerticalBorder::VerticalBorder(const Vector2& topLeft, const Vector2& bottomRight)
     : Border(topLeft, bottomRight) {
-    face = (left() > tableSettings::w / 2 ? left() : right());
+    face = (left() > Table::w / 2 ? left() : right());
 }
-HorizontalBorder::HorizontalBorder(const Vec2r& topLeft, const Vec2r& bottomRight)
+HorizontalBorder::HorizontalBorder(const Vector2& topLeft, const Vector2& bottomRight)
     : Border(topLeft, bottomRight) {
-    face = (top() > tableSettings::h / 2 ? top() : bottom());
+    face = (top() > Table::h / 2 ? top() : bottom());
 }
 
 
-Graphics::Graphics() {
-    window = window(
-            sf::VideoMode(tableSettings::w * scale, tableSettings::h * scale),
+Graphics::Graphics()
+    : window (
+            sf::VideoMode(Table::w * Settings::scale, Table::h * Settings::scale),
             "Billiards"
-    );
-}
+    )
+{}
 
 template <typename T>
 void Graphics::drawObject(T &obj) {
     window.draw(obj.image);
 }
 
-void Graphics::drawBalls(vector<Ball> &balls) {
-    for (auto& ball : balls)
+void Graphics::drawScene(const Table& table) {
+    for (auto& ball : table.balls)
         if (!ball.pocketed) {
             drawObject(ball);
         }
-}
-
-template <typename T>
-void Graphics::drawBorders(vector<T> &borders) {
-    for (auto& border : borders) {
+    for (auto& border : table.verticalBorders) {
+        drawObject(border);
+    }
+    for (auto& border : table.horizontalBorders) {
         drawObject(border);
     }
 }
 
-
-Settings::Settings() {
-    scale = 300;
-    fps = 30;
-}
+Settings::Settings() : fps(30) {}
 
 void Settings::change() {
     //to_do
@@ -81,46 +74,46 @@ void Settings::change() {
 
 
 void Table::createBalls() {
-    real yc = tableSettings::h / 2.0f;
+    real yc = Table::h / 2.0f;
     real xf = yc;
-    real xb = tabtableSettingsle::w - xf;
+    real xb = Table::w - xf;
     real dx = std::sqrt(3) * Ball::radius * 1.01f;
     real dy = Ball::radius * 1.01f;
-    balls.emplace_back(Vec2r(xf, yc));
-    balls.emplace_back(Vec2r(xb, yc));
-    balls.emplace_back(Vec2r(xb + dx, yc - dy));
-    balls.emplace_back(Vec2r(xb + dx, yc + dy));
-    balls.emplace_back(Vec2r(xb + 2 * dx, yc - 2 * dy));
-    balls.emplace_back(Vec2r(xb + 2 * dx, yc));
-    balls.emplace_back(Vec2r(xb + 2 * dx, yc + 2 * dy));
+    balls.emplace_back(Vector2(xf, yc));
+    balls.emplace_back(Vector2(xb, yc));
+    balls.emplace_back(Vector2(xb + dx, yc - dy));
+    balls.emplace_back(Vector2(xb + dx, yc + dy));
+    balls.emplace_back(Vector2(xb + 2 * dx, yc - 2 * dy));
+    balls.emplace_back(Vector2(xb + 2 * dx, yc));
+    balls.emplace_back(Vector2(xb + 2 * dx, yc + 2 * dy));
     aliveBalls = balls.size();
     pocketedBalls = 0;
 }
 
 void Table::createBorders() {
-    real center = tableSettings::w / 2.f;
+    real center = Table::w / 2.f;
     real centerOffset = 1.4 * Ball::radius;
     real cornerOffset = borderWidth + 2 * Ball::radius;
 
     verticalBorders.emplace_back(
-            Vec2r(0, cornerOffset),
-            Vec2r(borderWidth, tableSettings::h - cornerOffset));
+            Vector2(0, cornerOffset),
+            Vector2(borderWidth, Table::h - cornerOffset));
     verticalBorders.emplace_back(
-            Vec2r(tableSettings::w - borderWidth, cornerOffset),
-            Vec2r(tableSettings::w, tableSettings::h - cornerOffset));
+            Vector2(Table::w - borderWidth, cornerOffset),
+            Vector2(Table::w, Table::h - cornerOffset));
 
     horizontalBorders.emplace_back(
-            Vec2r(cornerOffset, 0),
-            Vec2r(center - centerOffset, borderWidth));
+            Vector2(cornerOffset, 0),
+            Vector2(center - centerOffset, borderWidth));
     horizontalBorders.emplace_back(
-            Vec2r(center + centerOffset, 0),
-            Vec2r(tableSettings::w - cornerOffset, borderWidth));
+            Vector2(center + centerOffset, 0),
+            Vector2(Table::w - cornerOffset, borderWidth));
     horizontalBorders.emplace_back(
-            Vec2r(cornerOffset, tableSettings::h - borderWidth),
-            Vec2r(center - centerOffset, tableSettings::h));
+            Vector2(cornerOffset, Table::h - borderWidth),
+            Vector2(center - centerOffset, Table::h));
     horizontalBorders.emplace_back(
-            Vec2r(center + centerOffset, tableSettings::h - borderWidth),
-            Vec2r(tableSettings::w - cornerOffset, tableSettings::h));
+            Vector2(center + centerOffset, Table::h - borderWidth),
+            Vector2(Table::w - cornerOffset, Table::h));
 }
 
 bool Table::ballsStopped() {
@@ -134,16 +127,8 @@ bool Table::ballsStopped() {
 }
 
 Table::Table() {
-    graphics = Graphics();
-    borderWidth = 0.05;
     createBalls();
     createBorders();
-}
-
-void Table::drawScene() {
-    graphics.drawObjects(balls);
-    graphics.drawObjects(verticalBorders);
-    graphics.drawObjects(horizontalBorders);
 }
 
 Game::Game() {
@@ -153,21 +138,21 @@ Game::Game() {
 }
 
 void Game::mainLoop() {
-    table.graphics.window.setVerticalSyncEnabled(true);
+    graphics.window.setVerticalSyncEnabled(true);
     sf::Clock clock;
-    float time;
-    while (table.graphics.window.isOpen()) {
-        table.graphics.window.clear();
-        table.drawScene();
-        table.graphics.window.display();
+    real time;
+    while (graphics.window.isOpen()) {
+        graphics.window.clear();
+        graphics.drawScene(table);
+        graphics.window.display();
 
         if (state == GameState::simulation) {
             time = clock.getElapsedTime().asSeconds();
-            if (time < 1 / fps) continue;
-            time = 1 / fps;
+            if (time < 1 / settings.fps) continue;
+            time = 1 / settings.fps;
             clock.restart();
 
-            simulate(time);
+            simulate(table, time);
 
             if (table.ballsStopped()) {
                 state = (table.balls[0].pocketed || aliveBalls == 0
@@ -175,11 +160,11 @@ void Game::mainLoop() {
             }
 
             sf::Event event;
-            while (table.graphics.window.pollEvent(event)) {
+            while (graphics.window.pollEvent(event)) {
                 if (event.type == sf::Event::Closed ||
                     event.type == sf::Event::KeyPressed &&
                     event.key.code == sf::Keyboard::Escape) {
-                    table.graphics.window.close();
+                    graphics.window.close();
                 }
             }
         } else if (state == GameState::strike) {
