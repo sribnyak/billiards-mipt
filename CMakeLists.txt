@@ -10,11 +10,8 @@ endif()
 
 find_package(SFML 2 COMPONENTS graphics window system REQUIRED)
 
-set(SOURCES
-    # Billiards/main.cpp
-    Billiards/main_graphic.cpp
-    Billiards/objects.cpp Billiards/physics.cpp Billiards/maths.cpp
-)
+set(SOURCES Billiards/main.cpp Billiards/game.cpp Billiards/interface.cpp
+    Billiards/objects.cpp Billiards/physics.cpp Billiards/maths.cpp)
 
 add_executable(Billiards ${SOURCES})
 target_link_libraries(Billiards sfml-graphics sfml-window sfml-system)

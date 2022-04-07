@@ -1,6 +1,4 @@
 #include "objects.h"
-#include "physics.h"
-#include <iostream>
 
 int aliveBalls = 0;
 int pocketedBalls = 0;
@@ -40,31 +38,6 @@ HorizontalBorder::HorizontalBorder(const Vector2& topLeft, const Vector2& bottom
     face = (top() > Table::h / 2 ? top() : bottom());
 }
 
-
-Graphics::Graphics()
-    : window (
-            sf::VideoMode(Table::w * Settings::scale, Table::h * Settings::scale),
-            "Billiards"
-    )
-{}
-
-template <typename T>
-void Graphics::drawObject(T &obj) {
-    window.draw(obj.image);
-}
-
-void Graphics::drawScene(const Table& table) {
-    for (auto& ball : table.balls)
-        if (!ball.pocketed) {
-            drawObject(ball);
-        }
-    for (auto& border : table.verticalBorders) {
-        drawObject(border);
-    }
-    for (auto& border : table.horizontalBorders) {
-        drawObject(border);
-    }
-}
 
 Settings::Settings() : fps(30) {}
 
@@ -129,58 +102,4 @@ bool Table::ballsStopped() {
 Table::Table() {
     createBalls();
     createBorders();
-}
-
-Game::Game() {
-    table = Table();
-    settings = Settings();
-    state = GameState::strike;
-}
-
-void Game::mainLoop() {
-    graphics.window.setVerticalSyncEnabled(true);
-    sf::Clock clock;
-    real time;
-    while (graphics.window.isOpen()) {
-        graphics.window.clear();
-        graphics.drawScene(table);
-        graphics.window.display();
-
-        if (state == GameState::simulation) {
-            time = clock.getElapsedTime().asSeconds();
-            if (time < 1 / settings.fps) continue;
-            time = 1 / settings.fps;
-            clock.restart();
-
-            simulate(table, time);
-
-            if (table.ballsStopped()) {
-                state = (table.balls[0].pocketed || aliveBalls == 0
-                         ? GameState::end : GameState::strike);
-            }
-
-            sf::Event event;
-            while (graphics.window.pollEvent(event)) {
-                if (event.type == sf::Event::Closed ||
-                    event.type == sf::Event::KeyPressed &&
-                    event.key.code == sf::Keyboard::Escape) {
-                    graphics.window.close();
-                }
-            }
-        } else if (state == GameState::strike) {
-            real x, y;
-            std::cout << "Give a velocity to the ball\n";
-            std::cout << "x: " << std::flush;
-            std::cin >> x;
-            std::cout << "y: " << std::flush;
-            std::cin >> y;
-            table.balls[0].velocity.x = x;
-            table.balls[0].velocity.y = y;
-            state = GameState::simulation;
-            clock.restart();
-        } else if (state == GameState::end) {
-            std::cout << "Game over" << std::endl;
-            break;
-        }
-    }
 }

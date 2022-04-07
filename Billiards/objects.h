@@ -62,38 +62,13 @@ public:
     void drawScene();
 };
 
-class Graphics {
-public:
-    sf::RenderWindow window;
-
-    Graphics();
-
-    template<typename T>
-    void drawObject(T& obj);
-
-    void drawScene(const Table& table);
-};
-
 class Settings {
 public:
-    static constexpr real scale = 300;;
+    static constexpr real scale = 300;
     real fps;
 
     Settings();
     void change();
-};
-
-class Game {
-public:
-    enum class GameState { strike, simulation, end };
-
-    Table table;
-    Settings settings;
-    GameState state;
-    Graphics graphics;
-
-    Game();
-    void mainLoop();
 };
 
 #endif // BILLIARDS_OBJECTS_H_
