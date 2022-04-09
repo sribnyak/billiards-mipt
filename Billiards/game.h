@@ -10,7 +10,6 @@ public:
     enum class GameState { strike, simulation, end };
 
     Table table;
-    Settings settings;
     GameState state;
     Interface interface;
 

@@ -57,12 +57,18 @@ void processCollisions(Table& table) {
         --cnt;
         changed = false;
         for (int i = 0; i < table.balls.size(); ++i) {
-            for (int j = i + 1; j < table.balls.size(); ++j)
+            for (int j = i + 1; j < table.balls.size(); ++j) {
                 changed |= processCollision(table.balls[i], table.balls[j]);
-            for (auto& border : table.verticalBorders)
-                changed |= processCollision(table.balls[i], border);
-            for (auto& border : table.horizontalBorders)
-                changed |= processCollision(table.balls[i], border);
+            }
+            for (auto border : table.borders) {
+                if (std::dynamic_pointer_cast<VerticalBorder>(border)) {
+                    changed |= processCollision(table.balls[i],
+                        *std::dynamic_pointer_cast<VerticalBorder>(border));
+                } else {
+                    changed |= processCollision(table.balls[i],
+                        *std::dynamic_pointer_cast<HorizontalBorder>(border));
+                }
+            }
         }
     }
 }
@@ -106,12 +112,18 @@ real timeUntilCollision(const Ball& ball, const HorizontalBorder& border,
 real timeWithoutCollisions(const Table& table, real maxTime) {
     real time = maxTime;
     for (int i = 0; i < table.balls.size(); ++i) {
-        for (int j = i + 1; j < table.balls.size(); ++j)
+        for (int j = i + 1; j < table.balls.size(); ++j) {
             time = timeUntilCollision(table.balls[i], table.balls[j], time);
-        for (auto& border : table.verticalBorders)
-            time = timeUntilCollision(table.balls[i], border, time);
-        for (auto& border : table.horizontalBorders)
-            time = timeUntilCollision(table.balls[i], border, time);
+        }
+        for (auto border : table.borders) {
+            if (std::dynamic_pointer_cast<VerticalBorder>(border)) {
+                time = timeUntilCollision(table.balls[i],
+                    *std::dynamic_pointer_cast<VerticalBorder>(border), time);
+            } else {
+                time = timeUntilCollision(table.balls[i],
+                    *std::dynamic_pointer_cast<HorizontalBorder>(border), time);
+            }
+        }
     }
     return time;
 }

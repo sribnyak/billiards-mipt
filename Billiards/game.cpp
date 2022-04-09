@@ -1,10 +1,8 @@
 #include "game.h"
 
-Game::Game() {
-    table = Table();
-    settings = Settings();
-    state = GameState::strike;
-}
+Game::Game()
+    : table(), state(GameState::strike), interface(table)
+{}
 
 void Game::mainLoop() {
     sf::Clock clock;
@@ -14,8 +12,8 @@ void Game::mainLoop() {
 
         if (state == GameState::simulation) {
             time = clock.getElapsedTime().asSeconds();
-            if (time < 1 / settings.fps) continue;
-            time = 1 / settings.fps;
+            if (time < 1 / interface.settings.fps) continue;
+            time = 1 / interface.settings.fps;
             clock.restart();
 
             simulate(table, time);

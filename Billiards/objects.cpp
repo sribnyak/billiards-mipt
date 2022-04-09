@@ -1,45 +1,22 @@
 #include "objects.h"
 
-Ball::Ball(const Vector2& position, const Vector2& velocity) // default velocity 0
-    : position(position), velocity(velocity),
-      image(radius * Settings::Settings::scale) {
-    image.setOrigin(Vector2(radius * Settings::Settings::scale, radius * Settings::scale));
-    image.setPosition(position * Settings::scale);
-}
+Ball::Ball(const Vector2& position, const Vector2& velocity)
+    : position(position), velocity(velocity)
+{}
 
 void Ball::move(real t) {
     position += t * velocity;
-    image.setPosition(position * Settings::scale);
 }
 
 Border::Border(const Vector2& topLeft, const Vector2& bottomRight)
-    : topLeft(topLeft), bottomRight(bottomRight) {
-    Vector2 diag = bottomRight - topLeft;
-    image.setSize(diag * Settings::scale);
-    image.setPosition(topLeft * Settings::scale);
-}
-
-VerticalBorder::VerticalBorder(const Vector2& topLeft, const Vector2& bottomRight)
-    : Border(topLeft, bottomRight) {
-    face = (left() > Table::w / 2 ? left() : right());
-}
-HorizontalBorder::HorizontalBorder(const Vector2& topLeft, const Vector2& bottomRight)
-    : Border(topLeft, bottomRight) {
-    face = (top() > Table::h / 2 ? top() : bottom());
-}
-
-
-Settings::Settings() : fps(30) {}
-
-void Settings::change() {
-    //to_do
-}
+    : topLeft(topLeft), bottomRight(bottomRight)
+{}
 
 
 void Table::createBalls() {
-    real yc = Table::h / 2.0f;
+    real yc = h / 2.0f;
     real xf = yc;
-    real xb = Table::w - xf;
+    real xb = w - xf;
     real dx = std::sqrt(3) * Ball::radius * 1.01f;
     real dy = Ball::radius * 1.01f;
     balls.emplace_back(Vector2(xf, yc));
@@ -51,30 +28,44 @@ void Table::createBalls() {
     balls.emplace_back(Vector2(xb + 2 * dx, yc + 2 * dy));
 }
 
+std::shared_ptr<Border> Table::createBorder(const Vector2& topLeft,
+                                            const Vector2& bottomRight) {
+    Vector2 diagonal = bottomRight - topLeft;
+    if (diagonal.x > diagonal.y) {
+        auto ptr = std::make_shared<HorizontalBorder>(topLeft, bottomRight);
+        ptr->face = (ptr->top() > h / 2 ? ptr->top() : ptr->bottom());
+        return ptr;
+    } else {
+        auto ptr = std::make_shared<VerticalBorder>(topLeft, bottomRight);
+        ptr->face = (ptr->left() > w / 2 ? ptr->left() : ptr->right());
+        return ptr;
+    }
+}
+
 void Table::createBorders() {
-    real center = Table::w / 2.f;
+    real center = w / 2.f;
     real centerOffset = 1.4 * Ball::radius;
     real cornerOffset = borderWidth + 2 * Ball::radius;
 
-    verticalBorders.emplace_back(
+    borders.emplace_back(createBorder(
             Vector2(0, cornerOffset),
-            Vector2(borderWidth, Table::h - cornerOffset));
-    verticalBorders.emplace_back(
-            Vector2(Table::w - borderWidth, cornerOffset),
-            Vector2(Table::w, Table::h - cornerOffset));
+            Vector2(borderWidth, h - cornerOffset)));
+    borders.emplace_back(createBorder(
+            Vector2(w - borderWidth, cornerOffset),
+            Vector2(w, h - cornerOffset)));
 
-    horizontalBorders.emplace_back(
+    borders.emplace_back(createBorder(
             Vector2(cornerOffset, 0),
-            Vector2(center - centerOffset, borderWidth));
-    horizontalBorders.emplace_back(
+            Vector2(center - centerOffset, borderWidth)));
+    borders.emplace_back(createBorder(
             Vector2(center + centerOffset, 0),
-            Vector2(Table::w - cornerOffset, borderWidth));
-    horizontalBorders.emplace_back(
-            Vector2(cornerOffset, Table::h - borderWidth),
-            Vector2(center - centerOffset, Table::h));
-    horizontalBorders.emplace_back(
-            Vector2(center + centerOffset, Table::h - borderWidth),
-            Vector2(Table::w - cornerOffset, Table::h));
+            Vector2(w - cornerOffset, borderWidth)));
+    borders.emplace_back(createBorder(
+            Vector2(cornerOffset, h - borderWidth),
+            Vector2(center - centerOffset, h)));
+    borders.emplace_back(createBorder(
+            Vector2(center + centerOffset, h - borderWidth),
+            Vector2(w - cornerOffset, h)));
 }
 
 bool Table::ballsStopped() {

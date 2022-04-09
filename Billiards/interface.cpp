@@ -1,23 +1,35 @@
 #include "interface.h"
 
-template <typename T>
-void Interface::drawObject(T &obj) {
-    window.draw(obj.image);
+void Interface::Settings::change() {
+    // TODO: implement
+}
+
+void Interface::drawBall(const Ball& ball) {
+    sf::CircleShape image(ball.radius * settings.scale);
+    image.setOrigin(Vector2(ball.radius * settings.scale,
+                            ball.radius * settings.scale));
+    image.setPosition(ball.position * settings.scale);
+    window.draw(image);
+}
+
+void Interface::drawBorder(const Border& border) {
+    sf::RectangleShape image;
+    image.setSize((border.bottomRight - border.topLeft) * settings.scale);
+    image.setPosition(border.topLeft * settings.scale);
+    window.draw(image);
 }
 
 void Interface::drawScene(const Table& table) {
-    for (auto& ball : table.balls)
-        drawObject(ball);
-    for (auto& border : table.verticalBorders) {
-        drawObject(border);
+    for (auto& ball : table.balls) {
+        drawBall(ball);
     }
-    for (auto& border : table.horizontalBorders) {
-        drawObject(border);
+    for (auto border : table.borders) {
+        drawBorder(*border);
     }
 }
 
-Interface::Interface() : window(
-        sf::VideoMode(Table::w * Settings::scale, Table::h * Settings::scale),
+Interface::Interface(Table& table) : settings(), window(
+        sf::VideoMode(table.w * settings.scale, table.h * settings.scale),
         "Billiards") {
     window.setVerticalSyncEnabled(true);
 }
@@ -49,12 +61,15 @@ Vector2 Interface::getStrikeVelocity() {
     std::cin >> y;
     return Vector2(x, y);
 }
+
 void Interface::showGameResult() {
     std::cout << "Game over" << std::endl;
 }
+
 void Interface::kill() {
     window.close();
 }
+
 bool Interface::isAlive() {
     return window.isOpen();
 }

@@ -9,7 +9,6 @@ public:
     static constexpr real radius = 0.05715;
     Vector2 position;
     Vector2 velocity;
-    sf::CircleShape image;
 
     Ball(const Vector2& position, const Vector2& velocity = Vector2());
     void move(real t);
@@ -19,9 +18,10 @@ class Border {
 public:
     Vector2 topLeft;
     Vector2 bottomRight;
-    sf::RectangleShape image;
 
     Border(const Vector2& topLeft, const Vector2& bottomRight);
+    virtual ~Border() = default;
+    
     real left() const { return topLeft.x; }
     real right() const { return bottomRight.x; }
     real top() const { return topLeft.y; }
@@ -30,13 +30,13 @@ public:
 
 class VerticalBorder : public Border {
 public:
-    VerticalBorder(const Vector2& topLeft, const Vector2& bottomRight);
+    using Border::Border;
     real face;
 };
 
 class HorizontalBorder : public Border {
 public:
-    HorizontalBorder(const Vector2& topLeft, const Vector2& bottomRight);
+    using Border::Border;
     real face;
 };
 
@@ -48,23 +48,14 @@ public:
     static constexpr real frictionAcceleration = 0.07;
 
     std::vector<Ball> balls;
-    std::vector<VerticalBorder> verticalBorders;
-    std::vector<HorizontalBorder> horizontalBorders;
+    std::vector<std::shared_ptr<Border>> borders;
 
     Table();
     void createBalls();
+    std::shared_ptr<Border> createBorder(const Vector2&, const Vector2&);
     void createBorders();
     bool ballsStopped();
     void drawScene();
-};
-
-class Settings {
-public:
-    static constexpr real scale = 300;
-    real fps;
-
-    Settings();
-    void change();
 };
 
 #endif // BILLIARDS_OBJECTS_H_
