@@ -21,8 +21,8 @@ void Game::mainLoop() {
             simulate(table, time);
 
             if (table.ballsStopped()) {
-                state = (table.balls[0].pocketed || aliveBalls == 0
-                         ? GameState::end : GameState::strike);
+                state = (table.balls.empty() ? GameState::end
+                                             : GameState::strike);
             }
         } else if (state == GameState::strike) {
             table.balls[0].velocity = interface.getStrikeVelocity();

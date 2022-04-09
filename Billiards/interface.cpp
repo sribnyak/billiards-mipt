@@ -7,9 +7,7 @@ void Interface::drawObject(T &obj) {
 
 void Interface::drawScene(const Table& table) {
     for (auto& ball : table.balls)
-        if (!ball.pocketed) {
-            drawObject(ball);
-        }
+        drawObject(ball);
     for (auto& border : table.verticalBorders) {
         drawObject(border);
     }

@@ -56,8 +56,8 @@ void processCollisions(Table& table) {
     while (changed && cnt) {
         --cnt;
         changed = false;
-        for (int i = 0; i < table.balls.size(); ++i) if (!table.balls[i].pocketed) {
-            for (int j = i + 1; j < table.balls.size(); ++j) if (!table.balls[j].pocketed)
+        for (int i = 0; i < table.balls.size(); ++i) {
+            for (int j = i + 1; j < table.balls.size(); ++j)
                 changed |= processCollision(table.balls[i], table.balls[j]);
             for (auto& border : table.verticalBorders)
                 changed |= processCollision(table.balls[i], border);
@@ -105,8 +105,8 @@ real timeUntilCollision(const Ball& ball, const HorizontalBorder& border,
 
 real timeWithoutCollisions(const Table& table, real maxTime) {
     real time = maxTime;
-    for (int i = 0; i < table.balls.size(); ++i) if (!table.balls[i].pocketed) {
-        for (int j = i + 1; j < table.balls.size(); ++j) if (!table.balls[j].pocketed)
+    for (int i = 0; i < table.balls.size(); ++i) {
+        for (int j = i + 1; j < table.balls.size(); ++j)
             time = timeUntilCollision(table.balls[i], table.balls[j], time);
         for (auto& border : table.verticalBorders)
             time = timeUntilCollision(table.balls[i], border, time);
@@ -126,12 +126,21 @@ void simulate(Table& table, real time) {
         // invariant: all colliding objects won't overlap later
 
         real dt = timeWithoutCollisions(table, timeLeft); // dt > 0
-        for (auto& ball : table.balls) if (!ball.pocketed)
+        for (auto& ball : table.balls)
             ball.move(dt);
+        for (auto it = table.balls.begin(); it != table.balls.end(); ++it) {
+            if (it->position.x < -it->radius ||
+                    it->position.x > table.w + it->radius ||
+                    it->position.y < -it->radius ||
+                    it->position.y > table.h + it->radius) {
+                table.balls.erase(it);
+                --it;
+            }
+        }
         
         timeLeft -= dt;
     }
-    for (auto& ball : table.balls) if (!ball.pocketed) {
+    for (auto& ball : table.balls) {
         real v = length(ball.velocity);
         if (v > 0) {
             real dv = Table::frictionAcceleration * time;

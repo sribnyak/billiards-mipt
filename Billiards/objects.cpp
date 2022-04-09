@@ -1,11 +1,8 @@
 #include "objects.h"
 
-int aliveBalls = 0;
-int pocketedBalls = 0;
-
 Ball::Ball(const Vector2& position, const Vector2& velocity) // default velocity 0
     : position(position), velocity(velocity),
-      pocketed(false), image(radius * Settings::Settings::scale) {
+      image(radius * Settings::Settings::scale) {
     image.setOrigin(Vector2(radius * Settings::Settings::scale, radius * Settings::scale));
     image.setPosition(position * Settings::scale);
 }
@@ -13,13 +10,6 @@ Ball::Ball(const Vector2& position, const Vector2& velocity) // default velocity
 void Ball::move(real t) {
     position += t * velocity;
     image.setPosition(position * Settings::scale);
-    if (position.x < -radius || position.x > Table::w + radius ||
-            position.y < -radius || position.y > Table::h + radius) {
-        pocketed = true;
-        ++pocketedBalls;
-        --aliveBalls;
-        velocity = Vector2(0, 0);
-    }
 }
 
 Border::Border(const Vector2& topLeft, const Vector2& bottomRight)
@@ -59,8 +49,6 @@ void Table::createBalls() {
     balls.emplace_back(Vector2(xb + 2 * dx, yc - 2 * dy));
     balls.emplace_back(Vector2(xb + 2 * dx, yc));
     balls.emplace_back(Vector2(xb + 2 * dx, yc + 2 * dy));
-    aliveBalls = balls.size();
-    pocketedBalls = 0;
 }
 
 void Table::createBorders() {
@@ -90,12 +78,11 @@ void Table::createBorders() {
 }
 
 bool Table::ballsStopped() {
-    for (auto& ball : balls)
-        if (!ball.pocketed) {
-            if (ball.velocity.x != 0 || ball.velocity.y != 0) {
-                return false;
-            }
+    for (auto& ball : balls) {
+        if (ball.velocity.x != 0 || ball.velocity.y != 0) {
+            return false;
         }
+    }
     return true;
 }
 

@@ -4,22 +4,18 @@
 #include "globals.h"
 #include "maths.h"
 
-extern int aliveBalls;
-extern int pocketedBalls;
-
-class Ball{
+class Ball {
 public:
     static constexpr real radius = 0.05715;
     Vector2 position;
     Vector2 velocity;
-    bool pocketed;
     sf::CircleShape image;
 
     Ball(const Vector2& position, const Vector2& velocity = Vector2());
     void move(real t);
 };
 
-class Border{
+class Border {
 public:
     Vector2 topLeft;
     Vector2 bottomRight;
