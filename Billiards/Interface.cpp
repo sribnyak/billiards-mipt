@@ -1,4 +1,4 @@
-#include "interface.h"
+#include "Interface.h"
 
 void Interface::Settings::change() {
     // TODO: implement

@@ -2,7 +2,9 @@
 #define BILLIARDS_PHYSICS_H_
 
 #include "globals.h"
-#include "objects.h"
+#include "Ball.h"
+#include "Table.h"
+#include "Border.h"
 #include "maths.h"
 
 bool processCollision(Ball& ball1, Ball& ball2);

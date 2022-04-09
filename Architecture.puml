@@ -29,8 +29,6 @@ class Ball {
     + real radius
     + Vector2 position
     + Vector2 velocity
-    + bool pocketed
-    + sf::CircleShape image
 
     + Ball(const Vector2&, const Vector2&)
     + void move(real)
@@ -39,9 +37,9 @@ class Ball {
 abstract Border {
     + Vector2 topLeft
     + Vector2 bottomRight
-    + sf::RectangleShape image
 
     + Border(const Vector2&, const Vector2&)
+    + virtual ~Border()
     + real left()
     + real right()
     + real top()
@@ -49,20 +47,26 @@ abstract Border {
 }
 
 class VerticalBorder {
-    + VerticalBorder(const Vector2&, const Vector2&)
     + real face
 }
 
 class HorizontalBorder {
-    + HorizontalBorder(const Vector2&, const Vector2&)
     + real face
 }
 
-class Graphics {
-    + sf::RenderWindow window
-    + Graphics()
-    + void drawObject<typename T>(T&)
-    + void drawScene(const Table&)
+class Interface {
+    - sf::RenderWindow window
+    - void drawBall(const Ball&)
+    - void drawBorder(const Border&)
+    - void drawScene(const Table&)
+    + Settings settings
+    + Interface(Table&)
+    + ~Interface()
+    + void demonstrate(Table&)
+    + Vector2 getStrikeVelocity()
+    + void showGameResult()
+    + void kill()
+    + bool isAlive()
 }
 
 class Table {
@@ -71,11 +75,11 @@ class Table {
     + real w
     + real frictionAcceleration
     + std::vector<Ball> balls
-    + std::vector<VerticalBorder> verticalBorders
-    + std::vector<HorizontalBorder> horizontalBorders
+    + std::vector<std::shared_ptr<Border>> borders
 
     + Table();
     + void createBalls()
+    + std::shared_ptr<Border> createBorder(const Vector2&, const Vector2&)
     + void createBorders()
     + bool ballsStopped()
     + void drawScene()
@@ -97,18 +101,16 @@ enum GameState {
 
 class Game {
     Table table
-    Settings settings
     GameState state
-    Graphics graphics
+    Interface interface
 
     Game()
     void mainLoop()
 }
 
 Game --o Table
-Game --o Settings
 Game --o GameState
-Game --o Graphics
+Game --o Interface
 Game --o Maths
 Game --o Physics
 
@@ -116,7 +118,9 @@ Table --o Ball
 Table --o VerticalBorder
 Table --o HorizontalBorder
 
-Maths --o Vector2
+Interface --> Settings
+
+Maths --> Vector2
 
 class VerticalBorder implements Border
 class HorizontalBorder implements Border

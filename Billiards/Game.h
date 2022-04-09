@@ -1,8 +1,8 @@
 #ifndef BILLIARDS_GAME_H_
 #define BILLIARDS_GAME_H_
 
-#include "objects.h"
-#include "interface.h"
+#include "Table.h"
+#include "Interface.h"
 #include "physics.h"
 
 class Game {

@@ -2,7 +2,9 @@
 #define BILLIARDS_INTERFACE_H_
 
 #include "globals.h"
-#include "objects.h"
+#include "Ball.h"
+#include "Border.h"
+#include "Table.h"
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
