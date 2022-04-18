@@ -55,7 +55,74 @@ void Table::createBorders() {
             Vector2(w - cornerOffset, h)));
 }
 
-bool Table::ballsStopped() {
+void Table::processCollisions() {
+    bool changed = true;
+    int cnt = 30;
+    while (changed && cnt) {
+        --cnt;
+        changed = false;
+        for (int i = 0; i < balls.size(); ++i) {
+            for (int j = i + 1; j < balls.size(); ++j) {
+                changed |= balls[i].processCollision(balls[j]);
+            }
+            for (auto border : borders) {
+                changed |= border->processCollision(balls[i]);
+            }
+        }
+    }
+}
+
+real Table::timeWithoutCollisions(real maxTime) const {
+    real time = maxTime;
+    for (int i = 0; i < balls.size(); ++i) {
+        for (int j = i + 1; j < balls.size(); ++j) {
+            time = balls[i].timeUntilCollision(balls[j], time);
+        }
+        for (auto border : borders) {
+            time = border->timeUntilCollision(balls[i], time);
+        }
+    }
+    return time;
+}
+
+void Table::simulate(real time) {
+    int cnt = 30;
+    real timeLeft = time;
+    while (timeLeft > 0 && cnt) { // TODO: eps needed?
+        --cnt;
+        // invariant: no objects are overlapping
+        processCollisions();
+        // invariant: all colliding objects won't overlap later
+
+        real dt = timeWithoutCollisions(timeLeft); // dt > 0
+        for (auto& ball : balls)
+            ball.move(dt);
+        for (auto it = balls.begin(); it != balls.end(); ++it) {
+            if (it->position.x < -it->radius ||
+                    it->position.x > w + it->radius ||
+                    it->position.y < -it->radius ||
+                    it->position.y > h + it->radius) {
+                balls.erase(it);
+                --it;
+            }
+        }
+        
+        timeLeft -= dt;
+    }
+    for (auto& ball : balls) {
+        real v = length(ball.velocity);
+        if (v > 0) {
+            real dv = Table::frictionAcceleration * time;
+            if (v - dv > 0) {
+                ball.velocity -= dv * (ball.velocity / v);
+            } else {
+                ball.velocity = Vector2(0, 0);
+            }
+        }
+    }
+}
+
+bool Table::ballsStopped() const {
     for (auto& ball : balls) {
         if (ball.velocity.x != 0 || ball.velocity.y != 0) {
             return false;

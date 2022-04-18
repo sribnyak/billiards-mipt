@@ -16,7 +16,7 @@ void Game::mainLoop() {
             time = 1 / interface.settings.fps;
             clock.restart();
 
-            simulate(table, time);
+            table.simulate(time);
 
             if (table.ballsStopped()) {
                 state = (table.balls.empty() ? GameState::end

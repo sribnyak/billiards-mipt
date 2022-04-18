@@ -10,7 +10,6 @@ public:
     Vector2(const sf::Vector2<real>&);
     real dot(const Vector2& other) const;
     real squared() const;
-    real length() const;
 };
 
 real length(const Vector2& vector);

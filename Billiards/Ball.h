@@ -12,6 +12,8 @@ public:
 
     Ball(const Vector2& position, const Vector2& velocity = Vector2());
     void move(real t);
+    bool processCollision(Ball& other);
+    real timeUntilCollision(const Ball& other, real maxTime) const;
 };
 
 
