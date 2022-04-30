@@ -1,7 +1,7 @@
 #include "Ball.h"
 
-Ball::Ball(const Vector2& position, const Vector2& velocity)
-        : position(position), velocity(velocity)
+Ball::Ball(const Vector2& position, int id)
+        : position(position), velocity(Vector2(0, 0)), id(id)
 {}
 
 void Ball::move(real t) {

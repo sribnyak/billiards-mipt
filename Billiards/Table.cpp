@@ -6,13 +6,14 @@ void Table::createBalls() {
     real xb = w - xf;
     real dx = std::sqrt(3) * Ball::radius * 1.01f;
     real dy = Ball::radius * 1.01f;
-    balls.emplace_back(Vector2(xf, yc));
-    balls.emplace_back(Vector2(xb, yc));
-    balls.emplace_back(Vector2(xb + dx, yc - dy));
-    balls.emplace_back(Vector2(xb + dx, yc + dy));
-    balls.emplace_back(Vector2(xb + 2 * dx, yc - 2 * dy));
-    balls.emplace_back(Vector2(xb + 2 * dx, yc));
-    balls.emplace_back(Vector2(xb + 2 * dx, yc + 2 * dy));
+    balls.emplace_back(Vector2(xf, yc), 0);
+    for (int row = 0, id = 1; row < 4; ++row) {
+        for (int place = 0; place < row + 1; ++place, ++id) {
+            balls.emplace_back(Vector2(xb + row * dx,
+                                       yc + (place * 2 - row) * dy),
+                               id);
+        }
+    }
 }
 
 std::shared_ptr<Border> Table::createBorder(const Vector2& topLeft,
