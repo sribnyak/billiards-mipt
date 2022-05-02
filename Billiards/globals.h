@@ -5,6 +5,7 @@
 #include <cmath>
 #include <memory>
 #include <algorithm>
+#include <functional>
 
 using real = float;
 
