@@ -1,8 +1,6 @@
 #include "Game.h"
 
-Game::Game()
-    : table(), state(GameState::strike), interface(table)
-{}
+Game::Game() : table(), state(GameState::strike), interface(table) {}
 
 void Game::mainLoop() {
     while (interface.isAlive()) {

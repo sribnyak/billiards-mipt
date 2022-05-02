@@ -15,7 +15,7 @@ public:
     void move(real t);
     bool processCollision(Ball& other);
     real timeUntilCollision(const Ball& other, real maxTime) const;
+    bool moving() const;
 };
-
 
 #endif //BILLIARDS_BALL_H_

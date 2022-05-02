@@ -1,8 +1,7 @@
 #include "Ball.h"
 
 Ball::Ball(const Vector2& position, int id)
-        : position(position), velocity(Vector2(0, 0)), id(id)
-{}
+        : position(position), velocity(Vector2(0, 0)), id(id) {}
 
 void Ball::move(real t) {
     position += t * velocity;
@@ -27,7 +26,11 @@ real Ball::timeUntilCollision(const Ball& other, real maxTime) const {
     Vector2 w = velocity - other.velocity;
     if (w.dot(r / length(r)) >= 0) return maxTime;
     real t = minQuadraticSolution(w.squared(), 2 * r.dot(w),
-        r.squared() - 4 * radius * radius, maxTime);
+                                  r.squared() - 4 * radius * radius, maxTime);
     if (t < 0.0001 || t > maxTime) return maxTime;
     return t;
+}
+
+bool Ball::moving() const {
+    return velocity.x != 0 || velocity.y != 0;
 }

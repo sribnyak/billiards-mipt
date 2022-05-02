@@ -46,7 +46,7 @@ private:
     sf::RenderWindow window;
     Table& table;
     sf::Clock clock;
-    real time;
+    real time = 0;
     std::vector<sf::CircleShape> ballImages;
     CueImage cueImage;
 

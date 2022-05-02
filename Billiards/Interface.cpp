@@ -75,7 +75,7 @@ void Interface::demonstrate() {
 }
 
 void Interface::simulate() {
-    while (isAlive() && !table.ballsStopped()) {
+    while (isAlive() && table.ballsMoving()) {
         demonstrate();
         table.simulate(time);
     }

@@ -66,7 +66,7 @@ void Table::processCollisions() {
             for (int j = i + 1; j < balls.size(); ++j) {
                 changed |= balls[i].processCollision(balls[j]);
             }
-            for (auto border : borders) {
+            for (const auto& border : borders) {
                 changed |= border->processCollision(balls[i]);
             }
         }
@@ -79,7 +79,7 @@ real Table::timeWithoutCollisions(real maxTime) const {
         for (int j = i + 1; j < balls.size(); ++j) {
             time = balls[i].timeUntilCollision(balls[j], time);
         }
-        for (auto border : borders) {
+        for (const auto& border : borders) {
             time = border->timeUntilCollision(balls[i], time);
         }
     }
@@ -107,7 +107,7 @@ void Table::simulate(real time) {
                 --it;
             }
         }
-        
+
         timeLeft -= dt;
     }
     for (auto& ball : balls) {
@@ -123,13 +123,8 @@ void Table::simulate(real time) {
     }
 }
 
-bool Table::ballsStopped() const {
-    for (auto& ball : balls) {
-        if (ball.velocity.x != 0 || ball.velocity.y != 0) {
-            return false;
-        }
-    }
-    return true;
+bool Table::ballsMoving() const {
+    return std::any_of(balls.begin(), balls.end(), std::mem_fn(&Ball::moving));
 }
 
 Table::Table() {

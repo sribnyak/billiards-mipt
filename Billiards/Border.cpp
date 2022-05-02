@@ -1,12 +1,11 @@
 #include "Border.h"
 
 Border::Border(const Vector2& topLeft, const Vector2& bottomRight)
-        : topLeft(topLeft), bottomRight(bottomRight)
-{}
+        : topLeft(topLeft), bottomRight(bottomRight) {}
 
-bool Border::processEdgeCollision(const Vector2& edge, Ball& ball) const {
+bool Border::processEdgeCollision(const Vector2& edge, Ball& ball) {
     Vector2 c = edge - ball.position;
-    if (length(c) > ball.radius * 1.001) return false;
+    if (length(c) > Ball::radius * 1.001) return false;
     Vector2 v = ball.velocity;
     if (v.dot(c) <= 0) return false;
     Vector2 n = c / length(c);
@@ -15,7 +14,7 @@ bool Border::processEdgeCollision(const Vector2& edge, Ball& ball) const {
 }
 
 bool VerticalBorder::processCollision(Ball& ball) const {
-    if (std::abs(ball.position.x - face) > ball.radius * 1.001 ||
+    if (std::abs(ball.position.x - face) > Ball::radius * 1.001 ||
             ball.position.y < top() ||
             ball.position.y > bottom() ||
             ball.velocity.x == 0 ||
@@ -29,8 +28,9 @@ bool VerticalBorder::processCollision(Ball& ball) const {
 
 real VerticalBorder::timeUntilCollision(const Ball& ball, real maxTime) const {
     if (ball.velocity.x == 0) return maxTime;
-    real t = std::min((face - ball.radius - ball.position.x) / ball.velocity.x,
-                      (face + ball.radius - ball.position.x) / ball.velocity.x);
+    real t = std::min(
+            (face - Ball::radius - ball.position.x) / ball.velocity.x,
+            (face + Ball::radius - ball.position.x) / ball.velocity.x);
     if (t < 0.0001 || t > maxTime) return maxTime;
     real p = ball.position.y + ball.velocity.y * t;
     if (p < top() || p > bottom()) return maxTime;
@@ -38,7 +38,7 @@ real VerticalBorder::timeUntilCollision(const Ball& ball, real maxTime) const {
 }
 
 bool HorizontalBorder::processCollision(Ball& ball) const {
-    if (std::abs(ball.position.y - face) > ball.radius * 1.001 ||
+    if (std::abs(ball.position.y - face) > Ball::radius * 1.001 ||
             ball.position.x < left() ||
             ball.position.x > right() ||
             ball.velocity.y == 0 ||
@@ -53,8 +53,9 @@ bool HorizontalBorder::processCollision(Ball& ball) const {
 real HorizontalBorder::timeUntilCollision(const Ball& ball,
                                           real maxTime) const {
     if (ball.velocity.y == 0) return maxTime;
-    real t = std::min((face - ball.radius - ball.position.y) / ball.velocity.y,
-                      (face + ball.radius - ball.position.y) / ball.velocity.y);
+    real t = std::min(
+            (face - Ball::radius - ball.position.y) / ball.velocity.y,
+            (face + Ball::radius - ball.position.y) / ball.velocity.y);
     if (t < 0.0001 || t > maxTime) return maxTime;
     real p = ball.position.x + ball.velocity.x * t;
     if (p < left() || p > right()) return maxTime;

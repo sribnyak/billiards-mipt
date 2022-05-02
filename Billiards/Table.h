@@ -18,14 +18,14 @@ public:
 
     Table();
     void createBalls();
-    std::shared_ptr<Border> createBorder(const Vector2&, const Vector2&);
+    static std::shared_ptr<Border> createBorder(const Vector2&,
+                                                const Vector2&);
     void createBorders();
 
     void processCollisions();
     real timeWithoutCollisions(real maxTime) const;
     void simulate(real time);
-    bool ballsStopped() const;
-    void drawScene();
+    bool ballsMoving() const;
 };
 
 #endif //BILLIARDS_TABLE_H_

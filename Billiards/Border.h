@@ -1,7 +1,6 @@
 #ifndef BILLIARDS_BORDER_H_
 #define BILLIARDS_BORDER_H_
 
-
 #include "globals.h"
 #include "maths.h"
 #include "Ball.h"
@@ -12,7 +11,7 @@ public:
     Vector2 bottomRight;
 
     Border(const Vector2& topLeft, const Vector2& bottomRight);
-    bool processEdgeCollision(const Vector2& edge, Ball& ball) const;
+    static bool processEdgeCollision(const Vector2& edge, Ball& ball);
     virtual bool processCollision(Ball& ball) const = 0;
     virtual real timeUntilCollision(const Ball& ball, real maxTime) const = 0;
 
