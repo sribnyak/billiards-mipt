@@ -7,33 +7,41 @@
 #include "Table.h"
 #include <SFML/Graphics.hpp>
 
-class CueImage {
+namespace settings {
+
+extern real fps;
+extern sf::Color tableColor;
+extern sf::Color ballColor;
+extern sf::Color borderColor;
+extern sf::Color cueColor;
+extern real scale;
+extern const Vector2 origin;
+Vector2 transform(const Vector2& vector);
+extern unsigned int windowWidth;
+extern unsigned int windowHeight;
+
+} // namespace settings
+
+class CueImage : public sf::Drawable {
     sf::ConvexShape shape;
 public:
     bool onTable;
-    CueImage(real scale, sf::Color color);
+    CueImage();
     void setPosition(const Vector2& position);
     void setDirection(const Vector2& direction);
-    void draw(sf::RenderWindow& window);
+    void draw(sf::RenderTarget&, sf::RenderStates) const override;
+};
+
+class TableImage : public sf::Drawable {
+    sf::RectangleShape borders;
+    sf::RectangleShape surface;
+public:
+    TableImage();
+    void draw(sf::RenderTarget&, sf::RenderStates) const override;
 };
 
 class Interface {
 public:
-    class Settings {
-    public:
-        real scale = 300;
-        real fps = 30;
-        sf::Color tableColor{0x00, 0x88, 0x3e};
-        sf::Color ballColor{0x74, 0x00, 0x14};
-        sf::Color borderColor{0x55, 0x2c, 0x0e};
-        sf::Color cueColor{0xbe, 0xb0, 0x62};
-
-        Settings() = default;
-        void change();
-    };
-
-    Settings settings;
-
     explicit Interface(Table& table);
     ~Interface();
     void simulate();
@@ -49,12 +57,12 @@ private:
     real time = 0;
     std::vector<sf::CircleShape> ballImages;
     CueImage cueImage;
+    TableImage tableImage;
 
     void createBallImages(const std::vector<Ball>& balls);
 
     void demonstrate();
     void drawBall(const Ball& ball);
-    void drawBorder(const Border& border);
 
     void drawScene();
 };

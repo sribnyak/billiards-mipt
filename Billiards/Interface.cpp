@@ -1,47 +1,51 @@
 #include "Interface.h"
 
-void Interface::Settings::change() {
-    // TODO: implement
-}
+namespace settings {
+
+real fps = 60;
+sf::Color tableColor{0x00, 0x88, 0x3e};
+sf::Color ballColor{0x74, 0x00, 0x14};
+sf::Color borderColor{0x55, 0x2c, 0x0e};
+sf::Color cueColor{0xbe, 0xb0, 0x62};
+real scale = 400;
+const Vector2 origin{2 * sizes::borderWidth * scale,
+                     2 * sizes::borderWidth * scale};
+Vector2 transform(const Vector2& vector) { return origin + vector * scale; }
+unsigned int windowWidth = static_cast<unsigned int>(
+        sizes::tableWidth * scale + 2 * origin.x);
+unsigned int windowHeight = static_cast<unsigned int>(
+        sizes::tableHeight * scale + 2 * origin.y);
+
+} // namespace settings
 
 void Interface::createBallImages(const std::vector<Ball>& balls) {
-    auto scaledRadius = Ball::radius * settings.scale;
+    auto scaledRadius = Ball::radius * settings::scale;
     ballImages.assign(balls.size(), sf::CircleShape(scaledRadius));
     for (auto& ballImage : ballImages) {
-        ballImage.setOrigin(Vector2(scaledRadius, scaledRadius));
+        ballImage.setOrigin(scaledRadius, scaledRadius);
     }
-    ballImages[0].setFillColor(settings.ballColor);
+    ballImages[0].setFillColor(settings::ballColor);
 }
 
 void Interface::drawBall(const Ball& ball) {
     auto& ballImage = ballImages[ball.id];
-    ballImage.setPosition(ball.position * settings.scale);
+    ballImage.setPosition(settings::transform(ball.position));
     window.draw(ballImage);
 }
 
-void Interface::drawBorder(const Border& border) {
-    sf::RectangleShape image;
-    image.setSize((border.bottomRight - border.topLeft) * settings.scale);
-    image.setPosition(border.topLeft * settings.scale);
-    image.setFillColor(settings.borderColor);
-    window.draw(image);
-}
-
 void Interface::drawScene() {
+    window.draw(tableImage);
     for (auto& ball : table.balls) {
         drawBall(ball);
     }
-    for (const auto& border : table.borders) {
-        drawBorder(*border);
-    }
+    if (cueImage.onTable)
+        window.draw(cueImage);
 }
 
 Interface::Interface(Table& table)
-        : settings(), window(sf::VideoMode(table.w * settings.scale,
-                                           table.h * settings.scale),
-                             "Billiards"),
-          table(table),
-          cueImage(settings.scale, settings.cueColor) {
+        : window(sf::VideoMode(settings::windowWidth, settings::windowHeight),
+                 "Billiards"),
+          table(table), cueImage(), tableImage() {
     window.setVerticalSyncEnabled(true);
     createBallImages(table.balls);
 }
@@ -52,10 +56,8 @@ Interface::~Interface() {
 
 void Interface::demonstrate() {
     while (isAlive()) {
-        window.clear(settings.tableColor);
+        window.clear();
         drawScene();
-        if (cueImage.onTable)
-            cueImage.draw(window);
         window.display();
 
         sf::Event event;
@@ -67,10 +69,10 @@ void Interface::demonstrate() {
             }
         }
         time = clock.getElapsedTime().asSeconds();
-        if (time >= 1 / settings.fps)
+        if (time >= 1 / settings::fps)
             break;
     }
-    time = 1 / settings.fps;
+    time = 1 / settings::fps;
     clock.restart();
 }
 
@@ -82,17 +84,17 @@ void Interface::simulate() {
 }
 
 Vector2 Interface::getStrikeVelocity() {
-    auto origin = table.balls[0].position * settings.scale;
-    cueImage.setPosition(origin);
+    auto origin = table.balls[0].position * settings::scale;
+    cueImage.setPosition(settings::transform(table.balls[0].position));
     cueImage.onTable = true;
-    while (isAlive()) {
+    while (isAlive()) { // TODO cycle
         auto mousePosition = sf::Mouse::getPosition(window);
-        Vector2 pos(mousePosition.x, mousePosition.y);
-        cueImage.setDirection(pos - origin);
+        Vector2 pos = Vector2(mousePosition.x, mousePosition.y) - settings::origin;
+        cueImage.setDirection(origin - pos);
         demonstrate();
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
             cueImage.onTable = false;
-            return 5.f * (origin - pos) / settings.scale;
+            return 3.f * (pos - origin) / settings::scale;
         }
     }
     return {};
@@ -100,7 +102,7 @@ Vector2 Interface::getStrikeVelocity() {
 
 void Interface::showGameResult() {
     // TODO: implement
-    int cnt = 2 * settings.fps;
+    int cnt = 2 * settings::fps;
     while (isAlive() && --cnt) {
         demonstrate();
     }
@@ -114,17 +116,18 @@ bool Interface::isAlive() {
     return window.isOpen();
 }
 
-CueImage::CueImage(real scale, sf::Color color) : shape(4), onTable(false) {
-    auto unit = Ball::radius * scale;
-    shape.setPoint(0, sf::Vector2f(unit * 1.5f, -unit / 7));
-    shape.setPoint(1, sf::Vector2f(unit * 30, -unit / 5));
-    shape.setPoint(2, sf::Vector2f(unit * 30, unit / 5));
-    shape.setPoint(3, sf::Vector2f(unit * 1.5f, unit / 7));
-    shape.setFillColor(color);
+CueImage::CueImage() : shape(4), onTable(false) {
+    auto unit = Ball::radius * settings::scale / 3;
+    auto dist = Ball::radius * settings::scale * 1.5f;
+    shape.setPoint(0, sf::Vector2f(dist, -unit / 2));
+    shape.setPoint(1, sf::Vector2f(dist + sizes::cueLength * settings::scale, -unit));
+    shape.setPoint(2, sf::Vector2f(dist + sizes::cueLength * settings::scale, unit));
+    shape.setPoint(3, sf::Vector2f(dist, unit / 2));
+    shape.setFillColor(settings::cueColor);
 }
 
-void CueImage::draw(sf::RenderWindow& window) {
-    window.draw(shape);
+void CueImage::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+    target.draw(shape, states);
 }
 
 void CueImage::setPosition(const Vector2& position) {
@@ -133,4 +136,22 @@ void CueImage::setPosition(const Vector2& position) {
 
 void CueImage::setDirection(const Vector2& direction) {
     shape.setRotation(atan2(direction.y, direction.x) / atan(1) * 45);
+}
+
+TableImage::TableImage()
+        : borders(settings::scale * Vector2(sizes::tableWidth + 2 * sizes::borderWidth,
+                                            sizes::tableHeight + 2 * sizes::borderWidth)),
+          surface(settings::scale * Vector2(sizes::tableWidth,
+                                            sizes::tableHeight)) {
+    borders.setPosition(settings::transform(Vector2(-sizes::borderWidth,
+                                                    -sizes::borderWidth)));
+    surface.setPosition(settings::transform(Vector2(0, 0)));
+    borders.setFillColor(settings::borderColor);
+    surface.setFillColor(settings::tableColor);
+}
+
+void TableImage::draw(sf::RenderTarget& target,
+                      sf::RenderStates states) const {
+    target.draw(borders, states);
+    target.draw(surface, states);
 }

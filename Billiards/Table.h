@@ -8,18 +8,17 @@
 
 class Table {
 public:
-    static constexpr real borderWidth = 0.05;
-    static constexpr real h = 1.27 + 2 * borderWidth;
-    static constexpr real w = 2.54 + 2 * borderWidth;
-    static constexpr real frictionAcceleration = 0.2;
+    real h = sizes::tableHeight;
+    real w = sizes::tableWidth;
+    real frictionAcceleration = 0.95;
 
     std::vector<Ball> balls;
     std::vector<std::shared_ptr<Border>> borders;
 
     Table();
     void createBalls();
-    static std::shared_ptr<Border> createBorder(const Vector2&,
-                                                const Vector2&);
+    void addVerticalBorder(real face, real top, real bottom);
+    void addHorizontalBorder(real face, real left, real right);
     void createBorders();
 
     void processCollisions();

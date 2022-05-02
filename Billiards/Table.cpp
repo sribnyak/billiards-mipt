@@ -7,7 +7,7 @@ void Table::createBalls() {
     real dx = std::sqrt(3) * Ball::radius * 1.01f;
     real dy = Ball::radius * 1.01f;
     balls.emplace_back(Vector2(xf, yc), 0);
-    for (int row = 0, id = 1; row < 4; ++row) {
+    for (int row = 0, id = 1; row < 5; ++row) {
         for (int place = 0; place < row + 1; ++place, ++id) {
             balls.emplace_back(Vector2(xb + row * dx,
                                        yc + (place * 2 - row) * dy),
@@ -16,44 +16,26 @@ void Table::createBalls() {
     }
 }
 
-std::shared_ptr<Border> Table::createBorder(const Vector2& topLeft,
-                                            const Vector2& bottomRight) {
-    Vector2 diagonal = bottomRight - topLeft;
-    if (diagonal.x > diagonal.y) {
-        auto ptr = std::make_shared<HorizontalBorder>(topLeft, bottomRight);
-        ptr->face = (ptr->top() > h / 2 ? ptr->top() : ptr->bottom());
-        return ptr;
-    } else {
-        auto ptr = std::make_shared<VerticalBorder>(topLeft, bottomRight);
-        ptr->face = (ptr->left() > w / 2 ? ptr->left() : ptr->right());
-        return ptr;
-    }
+void Table::addVerticalBorder(real face, real top, real bottom) {
+    borders.push_back(std::make_shared<VerticalBorder>(face, top, bottom));
+}
+
+void Table::addHorizontalBorder(real face, real left, real right) {
+    borders.push_back(std::make_shared<HorizontalBorder>(face, left, right));
 }
 
 void Table::createBorders() {
-    real center = w / 2.f;
-    real centerOffset = 1.4 * Ball::radius;
-    real cornerOffset = borderWidth + 2 * Ball::radius;
+    real center = w / 2.0f;
+    real centerOffset = sizes::centralPocketWidth / 2.0f;
+    real cornerOffset = sizes::cornerPocketWidth / std::sqrt(2);
 
-    borders.emplace_back(createBorder(
-            Vector2(0, cornerOffset),
-            Vector2(borderWidth, h - cornerOffset)));
-    borders.emplace_back(createBorder(
-            Vector2(w - borderWidth, cornerOffset),
-            Vector2(w, h - cornerOffset)));
+    addVerticalBorder(0, cornerOffset, h - cornerOffset);
+    addVerticalBorder(w, cornerOffset, h - cornerOffset);
 
-    borders.emplace_back(createBorder(
-            Vector2(cornerOffset, 0),
-            Vector2(center - centerOffset, borderWidth)));
-    borders.emplace_back(createBorder(
-            Vector2(center + centerOffset, 0),
-            Vector2(w - cornerOffset, borderWidth)));
-    borders.emplace_back(createBorder(
-            Vector2(cornerOffset, h - borderWidth),
-            Vector2(center - centerOffset, h)));
-    borders.emplace_back(createBorder(
-            Vector2(center + centerOffset, h - borderWidth),
-            Vector2(w - cornerOffset, h)));
+    addHorizontalBorder(0, cornerOffset, center - centerOffset);
+    addHorizontalBorder(0, center + centerOffset, w - cornerOffset);
+    addHorizontalBorder(h, cornerOffset, center - centerOffset);
+    addHorizontalBorder(h, center + centerOffset, w - cornerOffset);
 }
 
 void Table::processCollisions() {
@@ -89,7 +71,7 @@ real Table::timeWithoutCollisions(real maxTime) const {
 void Table::simulate(real time) {
     int cnt = 30;
     real timeLeft = time;
-    while (timeLeft > 0 && cnt) { // TODO: eps needed?
+    while (timeLeft > 0 && cnt) {
         --cnt;
         // invariant: no objects are overlapping
         processCollisions();
@@ -99,10 +81,8 @@ void Table::simulate(real time) {
         for (auto& ball : balls)
             ball.move(dt);
         for (auto it = balls.begin(); it != balls.end(); ++it) {
-            if (it->position.x < -it->radius ||
-                    it->position.x > w + it->radius ||
-                    it->position.y < -it->radius ||
-                    it->position.y > h + it->radius) {
+            if (it->position.x < 0 || it->position.x > w ||
+                    it->position.y < 0 || it->position.y > h) {
                 balls.erase(it);
                 --it;
             }

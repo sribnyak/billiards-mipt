@@ -7,32 +7,30 @@
 
 class Border {
 public:
-    Vector2 topLeft;
-    Vector2 bottomRight;
-
-    Border(const Vector2& topLeft, const Vector2& bottomRight);
     static bool processEdgeCollision(const Vector2& edge, Ball& ball);
+
     virtual bool processCollision(Ball& ball) const = 0;
     virtual real timeUntilCollision(const Ball& ball, real maxTime) const = 0;
-
-    real left() const { return topLeft.x; }
-    real right() const { return bottomRight.x; }
-    real top() const { return topLeft.y; }
-    real bottom() const { return bottomRight.y; }
 };
 
 class VerticalBorder : public Border {
 public:
-    using Border::Border;
     real face;
+    real top;
+    real bottom;
+    VerticalBorder(real face, real top, real bottom)
+            : face(face), top(top), bottom(bottom) {}
     bool processCollision(Ball& ball) const override;
     real timeUntilCollision(const Ball& ball, real maxTime) const override;
 };
 
 class HorizontalBorder : public Border {
 public:
-    using Border::Border;
     real face;
+    real left;
+    real right;
+    HorizontalBorder(real face, real left, real right)
+            : face(face), left(left), right(right) {}
     bool processCollision(Ball& ball) const override;
     real timeUntilCollision(const Ball& ball, real maxTime) const override;
 };

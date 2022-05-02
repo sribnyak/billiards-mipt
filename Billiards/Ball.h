@@ -6,7 +6,7 @@
 
 class Ball {
 public:
-    static constexpr real radius = 0.05715;
+    static constexpr real radius = sizes::ballDiameter / 2.0f;
     Vector2 position;
     Vector2 velocity;
     int id;
