@@ -1,72 +1,90 @@
 @startuml classes
 
-class Physics {
-    + bool processCollision(Ball&, Ball&)
-    + bool processCollision(Ball&, const Vector2&)
-    + bool processCollision(Ball&, const VerticalBorder&)
-    + bool processCollision(Ball&, const HorizontalBorder&)
-    + void processCollisions(Table&)
-    + real timeUntilCollision(const Ball&, const Ball&, real)
-    + real timeUntilCollision(const Ball&, const VerticalBorder&, real)
-    + real timeUntilCollision(const Ball&, const HorizontalBorder&, real)
-    + real timeWithoutCollisions(const Table&, real)
-    + void simulate(Table&, real)
-}
-
 class Maths {
+    + Vector2::Vector2(const sf::Vector2<real>&)
+    + real Vector2::dot(const Vector2&)
+    + real Vector2::squared()
     + real length(const Vector2&)
     + real minQuadraticSolution(real, real, real, real)
-}
-
-class Vector2 {
-    + Vector2(const sf::Vector2<real>&)
-    + real dot(const Vector2&)
-    + real squared()
-    + real length()
 }
 
 class Ball {
     + real radius
     + Vector2 position
     + Vector2 velocity
+    + int id
 
     + Ball(const Vector2&, const Vector2&)
     + void move(real)
+    + bool processCollision(Ball&)
+    + real timeUntilCollision(const Ball&, real)
+    + bool moving()
 }
 
 abstract Border {
-    + Vector2 topLeft
-    + Vector2 bottomRight
-
-    + Border(const Vector2&, const Vector2&)
-    + virtual ~Border()
-    + real left()
-    + real right()
-    + real top()
-    + real bottom()
+    + static bool processEdgeCollision(const Vector2&, Ball&)
+    + virtual bool processCollision(Ball&)
+    + virtual real timeUntilCollision(const Ball&, real)
 }
 
 class VerticalBorder {
     + real face
+    + real top
+    + real bottom
+    + VerticalBorder(real, real, real)
+    + bool processCollision(Ball&) const override
+    + real timeUntilCollision(const Ball&, real) const override
 }
 
 class HorizontalBorder {
     + real face
+    + real left
+    + real right
+    + HorizontalBorder(real, real, real)
+    + bool processCollision(Ball&)
+    + real timeUntilCollision(const Ball&, real)
+}
+
+class CueImage {
+    - sf::ConvexShape shape
+    + bool onTable
+    + CueImage()
+    + void setPosition(const Vector2&)
+    + void setDirection(const Vector2&)
+    + void draw(sf::RenderTarget&, sf::RenderStates)
+}
+
+class TableImage {
+    - sf::RectangleShape borders
+    - sf::RectangleShape surface
+    - std::vector<sf::RectangleShape> pockets
+    - void createCornerPockets()
+    - void createCentralPockets()
+    + TableImage()
+    + void draw(sf::RenderTarget&, sf::RenderStates) const override
 }
 
 class Interface {
     - sf::RenderWindow window
+    - Table& table
+    - sf::Clock clock
+    - real time
+    - std::vector<sf::CircleShape> ballImages
+    - CueImage cueImage
+    - TableImage tableImage
+    - void createBallImages(const std::vector<Ball>&)
+    - void demonstrate()
     - void drawBall(const Ball&)
-    - void drawBorder(const Border&)
-    - void drawScene(const Table&)
-    + Settings settings
-    + Interface(Table&)
-    + ~Interface()
-    + void demonstrate(Table&)
+    - void drawScene()
+    - void handleEvents()
+    + explicit Interface(Table&)
+    + void simulate()
     + Vector2 getStrikeVelocity()
-    + void showGameResult()
+    + bool restartAtTheEnd()
     + void kill()
     + bool isAlive()
+    + void restart()
+    + ~Interface()
 }
 
 class Table {
@@ -76,21 +94,15 @@ class Table {
     + real frictionAcceleration
     + std::vector<Ball> balls
     + std::vector<std::shared_ptr<Border>> borders
-
-    + Table();
+    + Table()
     + void createBalls()
-    + std::shared_ptr<Border> createBorder(const Vector2&, const Vector2&)
+    + void addVerticalBorder(real, real, real)
+    + void addHorizontalBorder(real, real, real)
     + void createBorders()
-    + bool ballsStopped()
-    + void drawScene()
-}
-
-class Settings {
-    + real scale
-    + real fps
-
-    + Settings()
-    + void change()
+    + void processCollisions()
+    + real timeWithoutCollisions(real)
+    + void simulate(real)
+    + bool ballsMoving()
 }
 
 enum GameState {
@@ -108,19 +120,26 @@ class Game {
     void mainLoop()
 }
 
-Game --o Table
-Game --o GameState
-Game --o Interface
-Game --o Maths
-Game --o Physics
+Game --> Table
+Game --> GameState
+Game --> Interface
 
-Table --o Ball
-Table --o VerticalBorder
-Table --o HorizontalBorder
+Table --> Ball
+Table --> VerticalBorder
+Table --> HorizontalBorder
 
-Interface --> Settings
+Ball --> Maths
 
-Maths --> Vector2
+Border --> Maths
+VerticalBorder --> Maths
+HorizontalBorder --> Maths
+
+Interface --> Ball
+Interface --> Border
+Interface --> Table
+Interface --> TableImage
+Interface --> CueImage
+
 
 class VerticalBorder implements Border
 class HorizontalBorder implements Border
