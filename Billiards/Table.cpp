@@ -9,8 +9,8 @@ void Table::createBalls() {
     balls.emplace_back(Vector2(xf, yc), 0);
     for (int row = 0, id = 1; row < 5; ++row) {
         for (int place = 0; place < row + 1; ++place, ++id) {
-            balls.emplace_back(Vector2(xb + row * dx,
-                                       yc + (place * 2 - row) * dy),
+            balls.emplace_back(Vector2(xb + real(row) * dx,
+                                       yc + real(place * 2 - row) * dy),
                                id);
         }
     }

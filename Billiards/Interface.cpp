@@ -44,7 +44,7 @@ void Interface::drawScene() {
 
 Interface::Interface(Table& table)
         : window(sf::VideoMode(settings::windowWidth, settings::windowHeight),
-                 "Billiards"),
+                 "Billiards", sf::Style::Close),
           table(table), cueImage(), tableImage() {
     window.setVerticalSyncEnabled(true);
     createBallImages(table.balls);
@@ -59,21 +59,24 @@ void Interface::demonstrate() {
         window.clear();
         drawScene();
         window.display();
-
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed ||
-                    event.type == sf::Event::KeyPressed &&
-                            event.key.code == sf::Keyboard::Escape) {
-                kill();
-            }
-        }
+        handleEvents();
         time = clock.getElapsedTime().asSeconds();
         if (time >= 1 / settings::fps)
             break;
     }
     time = 1 / settings::fps;
     clock.restart();
+}
+
+void Interface::handleEvents() {
+    sf::Event event{};
+    while (window.pollEvent(event)) {
+        if (event.type == sf::Event::Closed ||
+                event.type == sf::Event::KeyPressed &&
+                        event.key.code == sf::Keyboard::Escape) {
+            kill();
+        }
+    }
 }
 
 void Interface::simulate() {
@@ -84,20 +87,20 @@ void Interface::simulate() {
 }
 
 Vector2 Interface::getStrikeVelocity() {
-    auto origin = table.balls[0].position * settings::scale;
-    cueImage.setPosition(settings::transform(table.balls[0].position));
+    Vector2 theBall = settings::transform(table.balls[0].position);
+    Vector2 mouse;
     cueImage.onTable = true;
-    while (isAlive()) { // TODO cycle
-        auto mousePosition = sf::Mouse::getPosition(window);
-        Vector2 pos = Vector2(mousePosition.x, mousePosition.y) - settings::origin;
-        cueImage.setDirection(origin - pos);
+    cueImage.setPosition(theBall);
+    while (isAlive()) {
+        mouse = vector_cast<real>(sf::Mouse::getPosition(window));
+        cueImage.setDirection(theBall - mouse);
         demonstrate();
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            cueImage.onTable = false;
-            return 3.f * (pos - origin) / settings::scale;
+            break;
         }
     }
-    return {};
+    cueImage.onTable = false;
+    return 3.f * (mouse - theBall) / settings::scale;
 }
 
 void Interface::showGameResult() {
@@ -118,11 +121,11 @@ bool Interface::isAlive() {
 
 CueImage::CueImage() : shape(4), onTable(false) {
     auto unit = Ball::radius * settings::scale / 3;
-    auto dist = Ball::radius * settings::scale * 1.5f;
-    shape.setPoint(0, sf::Vector2f(dist, -unit / 2));
-    shape.setPoint(1, sf::Vector2f(dist + sizes::cueLength * settings::scale, -unit));
-    shape.setPoint(2, sf::Vector2f(dist + sizes::cueLength * settings::scale, unit));
-    shape.setPoint(3, sf::Vector2f(dist, unit / 2));
+    shape.setPoint(0, sf::Vector2f(0, -unit / 2));
+    shape.setPoint(1, sf::Vector2f(sizes::cueLength * settings::scale, -unit));
+    shape.setPoint(2, sf::Vector2f(sizes::cueLength * settings::scale, unit));
+    shape.setPoint(3, sf::Vector2f(0, unit / 2));
+    shape.setOrigin(-Ball::radius * settings::scale * 1.5f, 0);
     shape.setFillColor(settings::cueColor);
 }
 
@@ -139,10 +142,11 @@ void CueImage::setDirection(const Vector2& direction) {
 }
 
 TableImage::TableImage()
-        : borders(settings::scale * Vector2(sizes::tableWidth + 2 * sizes::borderWidth,
-                                            sizes::tableHeight + 2 * sizes::borderWidth)),
-          surface(settings::scale * Vector2(sizes::tableWidth,
-                                            sizes::tableHeight)) {
+        : borders(Vector2(sizes::tableWidth + 2 * sizes::borderWidth,
+                          sizes::tableHeight + 2 * sizes::borderWidth)
+                          * settings::scale),
+          surface(Vector2(sizes::tableWidth, sizes::tableHeight)
+                          * settings::scale) {
     borders.setPosition(settings::transform(Vector2(-sizes::borderWidth,
                                                     -sizes::borderWidth)));
     surface.setPosition(settings::transform(Vector2(0, 0)));

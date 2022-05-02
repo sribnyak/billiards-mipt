@@ -22,6 +22,11 @@ extern unsigned int windowHeight;
 
 } // namespace settings
 
+template <typename T, typename U>
+sf::Vector2<T> vector_cast(const sf::Vector2<U>& vector) {
+    return {static_cast<T>(vector.x), static_cast<T>(vector.y)};
+}
+
 class CueImage : public sf::Drawable {
     sf::ConvexShape shape;
 public:
@@ -65,6 +70,7 @@ private:
     void drawBall(const Ball& ball);
 
     void drawScene();
+    void handleEvents();
 };
 
 #endif // BILLIARDS_INTERFACE_H_
