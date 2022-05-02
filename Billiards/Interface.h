@@ -14,6 +14,7 @@ extern sf::Color tableColor;
 extern sf::Color ballColor;
 extern sf::Color borderColor;
 extern sf::Color cueColor;
+extern real force_factor;
 extern real scale;
 extern const Vector2 origin;
 Vector2 transform(const Vector2& vector);
@@ -40,6 +41,9 @@ public:
 class TableImage : public sf::Drawable {
     sf::RectangleShape borders;
     sf::RectangleShape surface;
+    std::vector<sf::RectangleShape> pockets;
+    void createCornerPockets();
+    void createCentralPockets();
 public:
     TableImage();
     void draw(sf::RenderTarget&, sf::RenderStates) const override;
@@ -51,9 +55,10 @@ public:
     ~Interface();
     void simulate();
     Vector2 getStrikeVelocity();
-    void showGameResult();
+    bool restartAtTheEnd();
     void kill();
     bool isAlive();
+    void restart() {}
 
 private:
     sf::RenderWindow window;

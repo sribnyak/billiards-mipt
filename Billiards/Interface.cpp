@@ -5,8 +5,9 @@ namespace settings {
 real fps = 60;
 sf::Color tableColor{0x00, 0x88, 0x3e};
 sf::Color ballColor{0x74, 0x00, 0x14};
-sf::Color borderColor{0x55, 0x2c, 0x0e};
+sf::Color borderColor{0x54, 0x54, 0x54};
 sf::Color cueColor{0xbe, 0xb0, 0x62};
+real force_factor = 3;
 real scale = 400;
 const Vector2 origin{2 * sizes::borderWidth * scale,
                      2 * sizes::borderWidth * scale};
@@ -100,15 +101,15 @@ Vector2 Interface::getStrikeVelocity() {
         }
     }
     cueImage.onTable = false;
-    return 3.f * (mouse - theBall) / settings::scale;
+    return settings::force_factor * (mouse - theBall) / settings::scale;
 }
 
-void Interface::showGameResult() {
-    // TODO: implement
-    int cnt = 2 * settings::fps;
+bool Interface::restartAtTheEnd() {
+    int cnt = static_cast<int>(settings::fps);
     while (isAlive() && --cnt) {
         demonstrate();
     }
+    return true;
 }
 
 void Interface::kill() {
@@ -152,10 +153,56 @@ TableImage::TableImage()
     surface.setPosition(settings::transform(Vector2(0, 0)));
     borders.setFillColor(settings::borderColor);
     surface.setFillColor(settings::tableColor);
+    createCentralPockets();
+    createCornerPockets();
+}
+
+void TableImage::createCentralPockets() {
+    sf::RectangleShape pocket(
+            Vector2(sizes::centralPocketWidth,
+                    sizes::borderWidth * 2) * settings::scale);
+    pocket.setFillColor(sf::Color::Black);
+    pocket.setOrigin(settings::scale * Vector2(sizes::centralPocketWidth / 2,
+                                               0));
+    pocket.setPosition(settings::transform(Vector2(sizes::tableWidth / 2,
+                                                   -sizes::borderWidth * 2)));
+    pockets.push_back(pocket);
+    pocket.setPosition(settings::transform(Vector2(sizes::tableWidth / 2,
+                                                   sizes::tableHeight)));
+    pockets.push_back(pocket);
+}
+
+void TableImage::createCornerPockets() {
+    sf::RectangleShape pocket(
+            Vector2(sizes::cornerPocketWidth,
+                    sizes::borderWidth * 3) * settings::scale);
+    pocket.setOrigin(settings::scale * Vector2(sizes::cornerPocketWidth / 2,
+                                               0));
+    pocket.setFillColor(sf::Color::Black);
+    real offset = sizes::centralPocketWidth / std::sqrt(2) / 2;
+
+    pocket.setPosition(settings::transform(Vector2(offset, offset)));
+    pocket.setRotation(135);
+    pockets.push_back(pocket);
+    pocket.setPosition(settings::transform(Vector2(sizes::tableWidth - offset,
+                                                   offset)));
+    pocket.setRotation(-135);
+    pockets.push_back(pocket);
+    pocket.setPosition(settings::transform(
+            Vector2(sizes::tableWidth - offset, sizes::tableHeight - offset)));
+    pocket.setRotation(-45);
+    pockets.push_back(pocket);
+    pocket.setPosition(settings::transform(
+            Vector2(offset, sizes::tableHeight - offset)));
+    pocket.setRotation(45);
+    pockets.push_back(pocket);
 }
 
 void TableImage::draw(sf::RenderTarget& target,
                       sf::RenderStates states) const {
     target.draw(borders, states);
     target.draw(surface, states);
+    for (const auto& pocket : pockets) {
+        target.draw(pocket, states);
+    }
 }

@@ -12,8 +12,13 @@ void Game::mainLoop() {
             table.balls[0].velocity = interface.getStrikeVelocity();
             state = GameState::simulation;
         } else if (state == GameState::end) {
-            interface.showGameResult();
-            break;
+            if (interface.restartAtTheEnd()) {
+                table = Table();
+                state = GameState::strike;
+                interface.restart();
+            } else {
+                break;
+            }
         }
     }
 }
